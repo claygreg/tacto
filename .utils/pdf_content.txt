@@ -1,0 +1,97 @@
+﻿=== PAGE 1 ===
+Documento de Requisitos e Backlog de
+Produto (MVP)
+Produto: Plataforma de Gest├úo Fase: M├¡nimo Produto Vi├ível
+de Avalia├º├Áes (MVP)
+Pedag├│gicas
+P├║blico-Alvo: Professores (Ensino Modelo: Offline-first (Cria├º├úo
+Fundamental e M├®dio) Digital ÔåÆ Impress├úo ÔåÆ
+Diagn├│stico)
+1. Vis├úo Geral do Escopo do MVP
+Este documento consolida as Hist├│rias de Usu├írio (User Stories) que comp├Áem a espinha
+dorsal do MVP da nossa plataforma. O foco estrat├®gico desta vers├úo ├® otimizar o fluxo de
+trabalho do professor, reduzindo drasticamente o tempo de elabora├º├úo e corre├º├úo de
+avalia├º├Áes, ao mesmo tempo em que fornece um diagn├│stico detalhado em camadas sobre o
+desempenho dos alunos.
+Para garantir viabilidade t├®cnica e r├ípida entrada no mercado, a aplica├º├úo online para os
+alunos foi postergada para vers├Áes futuras. O fluxo do MVP baseia-se na gera├º├úo de
+avalia├º├Áes em formatos prontos para impress├úo (PDF/DOCX), com inser├º├úo manual de
+gabaritos e envio automatizado de feedbacks personalizados diretamente para o e-mail dos
+estudantes.
+2. Detalhamento do Product Backlog
+├ëpico 1: Gest├úo e Autoria de Itens Avaliativos (Motor de Cria├º├úo)
+Foco em resolver o problema do in├¡cio do zero (Cold Start) e garantir ader├¬ncia a matrizes de
+refer├¬ncia.
+ÔùÅ US 1.1 - Gera├º├úo de Quest├úo via Intelig├¬ncia Artificial: Como professor, quero inserir
+um tema, o n├¡vel de ensino e a habilidade espec├¡fica que desejo avaliar, para que a
+intelig├¬ncia artificial gere uma quest├úo in├®dita (objetiva ou discursiva) alinhada a esses
+par├ómetros.
+ÔùÅ US 1.2 - Revis├úo e Refinamento Pedag├│gico: Como professor, quero poder editar o
+texto base, o enunciado e os distratores (alternativas) da quest├úo gerada pela IA, para
+garantir o rigor t├®cnico, corrigir ambiguidades e adequar a complexidade ├á realidade da
+minha turma.
+ÔùÅ US 1.3 - Autoria Manual de Itens: Como professor, quero ter a op├º├úo de criar uma
+quest├úo do zero, digitando o enunciado e as alternativas manualmente, para os casos
+
+=== PAGE 2 ===
+em que eu j├í possua um item avaliativo estruturado de autoria pr├│pria.
+ÔùÅ US 1.4 - Gest├úo do Banco de Itens Pessoal: Como professor, quero salvar todas as
+quest├Áes (geradas por IA, curadas ou autorais) em um banco pessoal, tagueando-as por
+disciplina e compet├¬ncia, para poder organiz├í-las e reutiliz├í-las em exames futuros.
+ÔùÅ US 1.5 - Busca Avan├ºada no Acervo P├║blico: Como professor, quero pesquisar
+quest├Áes de dom├¡nio p├║blico (bancas de concursos, exames oficiais) utilizando filtros
+combinados (ex: Disciplina: Biologia, Assunto: Citologia, N├¡vel: M├®dio), para adicion├í-las
+rapidamente ├á minha avalia├º├úo.
+├ëpico 2: Estrutura├º├úo e Exporta├º├úo (Core Operacional)
+Foco na montagem pr├ítica da prova e na seguran├ºa na aplica├º├úo presencial em sala de aula.
+ÔùÅ US 2.1 - Montagem do Caderno de Prova: Como professor, quero selecionar quest├Áes
+do meu banco ou do acervo p├║blico e organiz├í-las em um caderno de avalia├º├úo,
+podendo reorden├í-las e definir o peso/pontua├º├úo de cada item.
+ÔùÅ US 2.2 - Exporta├º├úo Multiformato (PDF / DOCX): Como professor, quero exportar a
+avalia├º├úo finalizada em formato PDF (pronto para impress├úo) ou DOCX (Word, para
+edi├º├Áes r├ípidas de ├║ltima hora), contendo cabe├ºalho institucional, diagrama├º├úo limpa e
+folha de respostas/gabarito oficial.
+ÔùÅ US 2.3 - Gera├º├úo Anti-Fraude (M├║ltiplas Vers├Áes Embaralhadas): Como professor, ao
+exportar a prova, quero a op├º├úo de gerar automaticamente vers├Áes variadas do mesmo
+exame (ex: Prova Tipo A, Tipo B), onde o sistema embaralha a ordem das quest├Áes e
+das alternativas, gerando um gabarito espelho correspondente para cada vers├úo para
+evitar fraudes na aplica├º├úo f├¡sica.
+├ëpico 3: Tabula├º├úo e Diagn├│stico Anal├¡tico (Diferencial de Valor)
+Foco em transformar dados brutos em diretrizes de interven├º├úo pedag├│gica precisas,
+entregues diretamente na ponta final.
+ÔùÅ US 3.1 - Inser├º├úo R├ípida de Gabaritos: Como professor, ap├│s a aplica├º├úo presencial,
+quero uma interface ├ígil na plataforma para digitar/clicar rapidamente nas alternativas
+marcadas pelos alunos, alimentando o motor de corre├º├úo do sistema com m├¡nima
+fric├º├úo.
+ÔùÅ US 3.2 - Painel Macro da Turma (Diagn├│stico N├¡vel 1): Como professor, quero
+visualizar um dashboard consolidado com o desempenho da turma, segmentado por
+tipos de quest├úo, conte├║dos curriculares e habilidades espec├¡ficas, para identificar
+instantaneamente quais t├│picos exigem revis├úo coletiva.
+ÔùÅ US 3.3 - Perfil de Desempenho Individual (Diagn├│stico N├¡vel 2): Como professor,
+quero clicar no nome de um aluno para visualizar seu detalhamento individual de erros e
+acertos, cruzando os dados com a matriz de habilidades e o n├¡vel de dificuldade, para
+desenhar planos de estudo e interven├º├Áes personalizadas.
+ÔùÅ US 3.4 - Hist├│rico e Evolu├º├úo Temporal (Diagn├│stico N├¡vel 3): Como professor, quero
+comparar o desempenho das turmas e dos alunos ao longo dos bimestres, para
+monitorar a curva de aprendizado e medir a efic├ícia das minhas interven├º├Áes
+pedag├│gicas ao longo do ano letivo.
+ÔùÅ US 3.5 - Disparo Automatizado de Feedback Individual por E-mail: Como professor,
+
+=== PAGE 3 ===
+ap├│s a valida├º├úo dos diagn├│sticos, quero acionar um bot├úo para que o sistema envie
+automaticamente por e-mail o relat├│rio de desempenho personalizado de cada aluno,
+eliminando a necessidade de entrega em papel ou cria├º├úo de um portal exclusivo para o
+aluno neste momento.
+├ëpico 4: Gest├úo de Acessos e Base (A Funda├º├úo)
+Foco em estrutura├º├úo robusta e onboarding simplificado de turmas.
+ÔùÅ US 4.1 - Cadastro e Autentica├º├úo do Professor: Como professor, quero criar minha
+conta e fazer login de forma segura (via e-mail/senha ou integra├º├úo Single Sign-On com
+Google), para acessar e salvar meu espa├ºo de trabalho.
+ÔùÅ US 4.2 - Cria├º├úo e Gest├úo de Turmas: Como professor, quero cadastrar minhas turmas
+(ex: "9┬║ Ano A", "1┬¬ S├®rie EM") no sistema, para organizar as avalia├º├Áes e separar os
+dados anal├¡ticos de forma isolada e coerente.
+ÔùÅ US 4.3 - Importa├º├úo de Lista de Chamada em Lote: Como professor, quero fazer o
+upload de uma planilha padr├úo (CSV/Excel) contendo "Nome Completo", "Data de
+Nascimento" e "E-mail do Aluno", para povoar rapidamente a base de alunos da minha
+turma sem digita├º├úo manual.
+

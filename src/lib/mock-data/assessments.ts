@@ -1,0 +1,53 @@
+// TODO: [API] GET /api/assessments
+import type { Assessment } from "@/types";
+
+export const mockAssessments: Assessment[] = [
+  {
+    id: "asmnt-1",
+    name: "Avaliação Bimestral — 2º Bimestre",
+    classroomId: "cls-1",
+    classroomName: "9º Ano A",
+    status: "applied",
+    createdAt: "2026-04-10",
+    appliedAt: "2026-04-22",
+    questionCount: 10,
+    totalPoints: 10,
+    versions: 2,
+  },
+  {
+    id: "asmnt-2",
+    name: "Prova Diagnóstica — Álgebra",
+    classroomId: "cls-1",
+    classroomName: "9º Ano A",
+    status: "exported",
+    createdAt: "2026-05-15",
+    appliedAt: null,
+    questionCount: 8,
+    totalPoints: 8,
+    versions: 1,
+  },
+  {
+    id: "asmnt-3",
+    name: "Quiz Rápido — Fotossíntese",
+    classroomId: "cls-2",
+    classroomName: "8º Ano B",
+    status: "draft",
+    createdAt: "2026-06-01",
+    appliedAt: null,
+    questionCount: 5,
+    totalPoints: 5,
+    versions: 1,
+  },
+  {
+    id: "asmnt-4",
+    name: "Avaliação Trimestral — Gramática",
+    classroomId: "cls-3",
+    classroomName: "7º Ano C",
+    status: "applied",
+    createdAt: "2026-03-20",
+    appliedAt: "2026-04-05",
+    questionCount: 12,
+    totalPoints: 10,
+    versions: 3,
+  },
+];

@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth.js Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  provider      String    @default("email")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  classrooms    Classroom[]
+  questions     Question[]
+  assessments   Assessment[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Application Models
+model Classroom {
+  id        String   @id @default(cuid())
+  name      String
+  year      String?
+  subject   String?
+  archived  Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  students    Student[]
+  assessments Assessment[]
+}
+
+model Student {
+  id          String   @id @default(cuid())
+  fullName    String
+  email       String?
+  birthDate   DateTime?
+  classroomId String
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  responses AssessmentResponse[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  type        String   // 'multiple_choice', 'discursive'
+  body        String   
+  baseText    String?  
+  discipline  String?
+  tags        String?  // Stored as JSON string in SQLite
+  bnccCode    String?
+  yearLevel   String?
+  difficulty  String?  // 'easy', 'medium', 'hard'
+  source      String   @default("personal") // 'personal', 'public', 'ai_generated'
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  options         QuestionOption[]
+  assessmentItems AssessmentItem[]
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  label      String   // 'A', 'B', 'C', 'D', 'E'
+  text       String   
+  isCorrect  Boolean  @default(false)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id          String    @id @default(cuid())
+  name        String
+  classroomId String
+  userId      String
+  createdAt   DateTime  @default(now())
+  appliedAt   DateTime?
+  
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  items       AssessmentItem[]
+  responses   AssessmentResponse[]
+}
+
+model AssessmentItem {
+  id             String     @id @default(cuid())
+  assessmentId   String
+  questionId     String
+  order          Int
+  weight         Float      @default(1.0)
+  versionShuffle String?      // Serialized JSON map of version to shuffled options
+
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question       Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  responseItems  ResponseItem[]
+}
+
+model AssessmentResponse {
+  id           String     @id @default(cuid())
+  assessmentId String
+  studentId    String
+  version      String     @default("A") // 'A', 'B', 'C'
+  totalScore   Float?
+  appliedAt    DateTime?
+
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  items        ResponseItem[]
+}
+
+model ResponseItem {
+  id                   String             @id @default(cuid())
+  assessmentResponseId String
+  assessmentItemId     String
+  selectedOption       String?
+  isCorrect            Boolean?
+  scoreObtained        Float?
+  manualScore          Float?
+
+  assessmentResponse   AssessmentResponse @relation(fields: [assessmentResponseId], references: [id], onDelete: Cascade)
+  assessmentItem       AssessmentItem     @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
+}
