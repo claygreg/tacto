@@ -136,7 +136,7 @@ export default function TabulacaoPage({ params }: { params: { id: string } }) {
           <tbody className="divide-y divide-border">
             {data.students.map((student: any) => (
               <tr key={student.id} className="hover:bg-muted/30">
-                <td className="p-3 font-medium whitespace-nowrap sticky left-0 bg-card z-10">{student.name}</td>
+                <td className="p-3 font-medium whitespace-nowrap sticky left-0 bg-card z-10">{student.fullName}</td>
                 {data.items.map((item: any) => (
                   <td key={item.id} className="p-1 border-l border-border/50 text-center">
                     <input

@@ -29,7 +29,7 @@ export async function GET() {
       name: a.name,
       classroomId: a.classroomId,
       classroomName: a.classroom.name,
-      status: a.appliedAt ? "applied" : a.items.length > 0 ? "exported" : "draft",
+      status: a.appliedAt ? "applied" : a._count.items > 0 ? "exported" : "draft",
       createdAt: a.createdAt.toISOString(),
       appliedAt: a.appliedAt ? a.appliedAt.toISOString() : null,
       questionCount: a._count.items,

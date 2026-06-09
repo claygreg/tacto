@@ -20,26 +20,21 @@ export async function POST(req: Request) {
   // Fallback caso não tenha chave do Gemini configurada no ambiente
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     console.warn("GOOGLE_GENERATIVE_AI_API_KEY não definida. Retornando mock de IA.");
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(
-          NextResponse.json({
-            type,
-            discipline,
-            yearLevel,
-            baseText: "Este é um texto-base gerado automaticamente porque a chave da API do Gemini não está configurada no seu arquivo .env.",
-            body: `Você pediu uma questão de ${discipline} sobre "${topic}" para o nível ${yearLevel} com dificuldade ${difficulty}. Qual das alternativas abaixo está correta?`,
-            explanation: "Explicação mockada devido à ausência de chave de API.",
-            options: type === "multiple_choice" ? [
-              { label: "A", text: "Alternativa incorreta 1", isCorrect: false },
-              { label: "B", text: "Alternativa incorreta 2", isCorrect: false },
-              { label: "C", text: "Esta é a alternativa correta", isCorrect: true },
-              { label: "D", text: "Alternativa incorreta 3", isCorrect: false },
-              { label: "E", text: "Alternativa incorreta 4", isCorrect: false },
-            ] : undefined,
-          })
-        );
-      }, 1500);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    return NextResponse.json({
+      type,
+      discipline,
+      yearLevel,
+      baseText: "Este é um texto-base gerado automaticamente porque a chave da API do Gemini não está configurada no seu arquivo .env.",
+      body: `Você pediu uma questão de ${discipline} sobre "${topic}" para o nível ${yearLevel} com dificuldade ${difficulty}. Qual das alternativas abaixo está correta?`,
+      explanation: "Explicação mockada devido à ausência de chave de API.",
+      options: type === "multiple_choice" ? [
+        { label: "A", text: "Alternativa incorreta 1", isCorrect: false },
+        { label: "B", text: "Alternativa incorreta 2", isCorrect: false },
+        { label: "C", text: "Esta é a alternativa correta", isCorrect: true },
+        { label: "D", text: "Alternativa incorreta 3", isCorrect: false },
+        { label: "E", text: "Alternativa incorreta 4", isCorrect: false },
+      ] : undefined,
     });
   }
 

@@ -84,7 +84,7 @@ export async function GET(
   }));
 
   return NextResponse.json({
-    studentName: student.name,
+    studentName: student.fullName,
     totalScore,
     maxPossibleScore,
     performanceByDiscipline,

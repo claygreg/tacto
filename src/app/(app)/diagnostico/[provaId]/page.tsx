@@ -173,7 +173,7 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
           {students.map((student) => (
             <Link key={student.id} href={`/diagnostico/${params.provaId}/aluno/${student.id}`}>
               <div className="p-3 border border-border rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-colors flex justify-between items-center cursor-pointer">
-                <span className="font-medium text-sm">{student.name}</span>
+                <span className="font-medium text-sm">{student.fullName}</span>
                 {student.totalScore !== null ? (
                   <span className="text-sm font-bold text-primary">{student.totalScore.toFixed(1)}</span>
                 ) : (

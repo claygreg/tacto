@@ -19,7 +19,7 @@ export async function GET(
       classroom: {
         include: {
           students: {
-            orderBy: { name: "asc" },
+            orderBy: { fullName: "asc" },
           },
         },
       },
