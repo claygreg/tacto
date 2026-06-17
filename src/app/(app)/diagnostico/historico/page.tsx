@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { mockHistoricalData } from "@/lib/mock-data/diagnostics";
 import { mockAssessments as assessmentsList } from "@/lib/mock-data/assessments";
+import { Button } from "@/components/ui/button";
 
 export default function HistoricoPage() {
   return (

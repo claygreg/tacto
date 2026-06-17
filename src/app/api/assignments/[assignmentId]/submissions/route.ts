@@ -53,8 +53,8 @@ export async function POST(
       
       let isCorrect = null;
       let scoreObtained = 0;
-      let selectedOption = answer?.selectedOption || null;
-      let manualScore = answer?.manualScore || null;
+      const selectedOption = answer?.selectedOption || null;
+      const manualScore = answer?.manualScore || null;
 
       if (answer) {
         if (q.type === "multiple_choice") {
