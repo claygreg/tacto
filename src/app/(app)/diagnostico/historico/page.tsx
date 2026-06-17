@@ -15,12 +15,9 @@ import { mockAssessments as assessmentsList } from "@/lib/mock-data/assessments"
 
 export default function HistoricoPage() {
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Histórico e Evolução</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Acompanhe a evolução da turma ao longo dos bimestres
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">Histórico e evolução</h1>
       </div>
 
       {/* Filtros */}
@@ -35,16 +32,13 @@ export default function HistoricoPage() {
         </select>
         <div className="flex gap-2">
           {["Turma", "Individual"].map((mode) => (
-            <button
+            <Button
               key={mode}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                mode === "Turma"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
+              variant={mode === "Turma" ? "default" : "ghost"}
+              className="rounded-lg"
             >
               {mode}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

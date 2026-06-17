@@ -31,7 +31,7 @@ export default function MontagemdaProvaPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/provas">
@@ -71,7 +71,7 @@ export default function MontagemdaProvaPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="flex-1 gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-xs py-3"
+                  className="flex-1 gap-1.5 rounded-none aria-selected:border-none aria-selected:outline-none aria-selected:ring-0 aria-selected:bg-transparent text-xs py-3 aria-selected:text-foreground text-muted-foreground"
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {label}
@@ -176,12 +176,14 @@ export default function MontagemdaProvaPage() {
                       />
                     </div>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeQuestion(q.id)}
-                    className="text-muted-foreground hover:text-destructive transition-colors mt-0.5 shrink-0"
+                    className="w-6 h-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors mt-0.5 shrink-0"
                   >
                     <X className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>

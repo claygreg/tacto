@@ -16,13 +16,16 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import type { DiagnosticSummary, GradeRange, StudentResult } from "@/types";
+import { PIE_CHART_PALETTE } from "@/lib/constants";
+import { BreadcrumbSetter } from "@/components/ui/breadcrumb-setter";
 
-const PIE_COLORS = ["#ef4444", "#f59e0b", "#6366f1", "#10b981"];
+
 
 export default function DiagnosticoTurmaPage({ params }: { params: { provaId: string } }) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DiagnosticSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<Array<{ id: string; fullName: string; totalScore: number | null }>>([]);
 
   useEffect(() => {
     // Buscar diagnóstico
@@ -60,7 +63,8 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+    <div className="w-full space-y-6 pb-20">
+      {data?.assessmentName && <BreadcrumbSetter segment={params.provaId} label={data.assessmentName} />}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -70,10 +74,7 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold">{data.assessmentName}</h1>
-            <p className="text-muted-foreground text-sm">
-              {data.classroomName} {data.appliedAt ? `· Aplicada em ${new Date(data.appliedAt).toLocaleDateString()}` : ""} · {data.totalStudents} alunos
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight">{data.assessmentName}</h1>
           </div>
         </div>
         {/* TODO: [API] POST /api/emails/send-feedback */}
@@ -90,7 +91,7 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
       )}
 
       {/* Metric cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Média geral", value: data.average.toFixed(1), color: "text-primary" },
           { label: "Maior nota", value: data.highest.toFixed(1), color: "text-green-400" },
@@ -142,8 +143,8 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
                 dataKey="value"
                 stroke="none"
               >
-                {data.gradeDistribution.map((entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                {data.gradeDistribution.map((entry: GradeRange, index: number) => (
+                  <Cell key={`cell-${index}`} fill={PIE_CHART_PALETTE[index % PIE_CHART_PALETTE.length]} />
                 ))}
               </Pie>
               <Tooltip
@@ -153,9 +154,9 @@ export default function DiagnosticoTurmaPage({ params }: { params: { provaId: st
             </PieChart>
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-2 justify-center mt-2">
-            {data.gradeDistribution.map((entry: any, index: number) => (
+            {data.gradeDistribution.map((entry: GradeRange, index: number) => (
               <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_CHART_PALETTE[index % PIE_CHART_PALETTE.length] }} />
                 {entry.name}
               </div>
             ))}

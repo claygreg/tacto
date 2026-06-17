@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,21 +14,16 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import type { DashboardSummary, RecentAssessment, ActivityItem } from "@/types";
+import { ASSESSMENT_STATUS_LABEL, ASSESSMENT_STATUS_CLASS } from "@/lib/constants";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useSWR<DashboardSummary>("/api/dashboard/summary", fetcher);
 
-  useEffect(() => {
-    fetch("/api/dashboard/summary")
-      .then(res => res.json())
-      .then(json => setData(json))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading || !data) {
+  if (isLoading || !data) {
     return <div className="flex justify-center p-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>;
   }
 
@@ -41,17 +35,14 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="w-full space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold">Olá, {session?.user?.name?.split(' ')[0] || 'Professor'} 👋</h1>
-        <p className="text-muted-foreground text-sm mt-1 capitalize">
-          {currentDate}
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">Olá, {session?.user?.name?.split(' ')[0] || 'Professor'} 👋</h1>
       </div>
 
       {/* Metric cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
             label: "Turmas ativas",
@@ -93,7 +84,7 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <div className="flex items-center gap-3">
-        <Link href="/provas/nova">
+        <Link href="/provas">
           <Button className="gap-2" id="btn-create-assessment">
             <Plus className="w-4 h-4" />
             Nova Prova
@@ -120,7 +111,7 @@ export default function DashboardPage() {
             {data.recentAssessments.length === 0 ? (
               <div className="text-sm text-muted-foreground py-4">Nenhuma prova criada ainda.</div>
             ) : (
-              data.recentAssessments.map((a: any) => (
+              data.recentAssessments.map((a: RecentAssessment) => (
                 <div
                   key={a.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors"
@@ -134,19 +125,9 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <span
-                    className={`shrink-0 ml-3 text-xs px-2 py-0.5 rounded-full font-medium ${
-                      a.status === "applied"
-                        ? "bg-green-500/15 text-green-400"
-                        : a.status === "exported"
-                        ? "bg-blue-500/15 text-blue-400"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                    className={`shrink-0 ml-3 text-xs px-2 py-0.5 rounded-full font-medium ${ASSESSMENT_STATUS_CLASS[a.status]}`}
                   >
-                    {a.status === "applied"
-                      ? "Aplicada"
-                      : a.status === "exported"
-                      ? "Exportada"
-                      : "Rascunho"}
+                    {ASSESSMENT_STATUS_LABEL[a.status]}
                   </span>
                 </div>
               ))
@@ -161,7 +142,7 @@ export default function DashboardPage() {
             <TrendingUp className="w-4 h-4 text-muted-foreground" />
           </div>
           <div className="space-y-4">
-            {data.mockActivity.map((item: any) => (
+            {data.mockActivity.map((item: ActivityItem) => (
               <div key={item.id} className="flex items-start gap-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                 <div>

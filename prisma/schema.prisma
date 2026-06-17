@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // NextAuth.js Models
@@ -49,11 +50,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  classrooms    Classroom[]
-  questions     Question[]
-  assessments   Assessment[]
+  accounts        Account[]
+  sessions        Session[]
+  classrooms      Classroom[]
+  questions       Question[]
+  tests           Test[]
+  folders         QuestionFolder[]
 }
 
 model VerificationToken {
@@ -77,20 +79,22 @@ model Classroom {
   updatedAt DateTime @updatedAt
 
   students    Student[]
-  assessments Assessment[]
+  testAssignments TestAssignment[]
 }
 
 model Student {
-  id          String   @id @default(cuid())
-  fullName    String
-  email       String?
-  birthDate   DateTime?
-  classroomId String
-  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  fullName     String
+  cpf          String?
+  enrollmentId String?
+  email        String?
+  birthDate    DateTime?
+  classroomId  String
+  classroom    Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  responses AssessmentResponse[]
+  submissions StudentSubmission[]
 }
 
 model Question {
@@ -104,13 +108,16 @@ model Question {
   yearLevel   String?
   difficulty  String?  // 'easy', 'medium', 'hard'
   source      String   @default("personal") // 'personal', 'public', 'ai_generated'
+  imageUrl    String?  // Armazenará a URL direta da imagem (ex: INEP)
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   options         QuestionOption[]
-  assessmentItems AssessmentItem[]
+  testQuestions   TestQuestion[]
+  results         QuestionResult[]
+  folderItems     FolderQuestion[]
 }
 
 model QuestionOption {
@@ -122,58 +129,93 @@ model QuestionOption {
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
-model Assessment {
-  id          String    @id @default(cuid())
-  name        String
-  classroomId String
-  userId      String
-  createdAt   DateTime  @default(now())
-  appliedAt   DateTime?
+// ── Tests & Assessments ──────────────────────────────────────
+
+model Test {
+  id           String   @id @default(cuid())
+  title        String
+  instructions String?
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  items       AssessmentItem[]
-  responses   AssessmentResponse[]
+  questions    TestQuestion[]
+  assignments  TestAssignment[]
 }
 
-model AssessmentItem {
-  id             String     @id @default(cuid())
-  assessmentId   String
+model TestQuestion {
+  id             String   @id @default(cuid())
+  testId         String
   questionId     String
   order          Int
-  weight         Float      @default(1.0)
-  versionShuffle String?      // Serialized JSON map of version to shuffled options
+  weight         Float    @default(1.0)
 
-  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  question       Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  responseItems  ResponseItem[]
+  test           Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
-model AssessmentResponse {
-  id           String     @id @default(cuid())
-  assessmentId String
-  studentId    String
-  version      String     @default("A") // 'A', 'B', 'C'
-  totalScore   Float?
-  appliedAt    DateTime?
+model TestAssignment {
+  id          String    @id @default(cuid())
+  testId      String
+  classroomId String
+  appliedAt   DateTime?
+  
+  test        Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
-  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  items        ResponseItem[]
+  submissions StudentSubmission[]
 }
 
-model ResponseItem {
-  id                   String             @id @default(cuid())
-  assessmentResponseId String
-  assessmentItemId     String
-  selectedOption       String?
-  isCorrect            Boolean?
-  scoreObtained        Float?
-  manualScore          Float?
+model StudentSubmission {
+  id               String         @id @default(cuid())
+  testAssignmentId String
+  studentId        String
+  version          String         @default("A") // 'A', 'B', 'C'
+  totalScore       Float?
+  appliedAt        DateTime?
 
-  assessmentResponse   AssessmentResponse @relation(fields: [assessmentResponseId], references: [id], onDelete: Cascade)
-  assessmentItem       AssessmentItem     @relation(fields: [assessmentItemId], references: [id], onDelete: Cascade)
+  testAssignment   TestAssignment @relation(fields: [testAssignmentId], references: [id], onDelete: Cascade)
+  student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  results          QuestionResult[]
+}
+
+model QuestionResult {
+  id                  String             @id @default(cuid())
+  studentSubmissionId String
+  questionId          String             
+  selectedOption      String?
+  isCorrect           Boolean?
+  scoreObtained       Float?
+  manualScore         Float?
+
+  studentSubmission   StudentSubmission  @relation(fields: [studentSubmissionId], references: [id], onDelete: Cascade)
+  question            Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// ── Question Folders ─────────────────────────────────────────
+
+model QuestionFolder {
+  id        String   @id @default(cuid())
+  name      String
+  color     String?  // hex color for visual identification
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions FolderQuestion[]
+}
+
+model FolderQuestion {
+  folderId   String
+  questionId String
+  addedAt    DateTime @default(now())
+
+  folder   QuestionFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  question Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, questionId])
 }

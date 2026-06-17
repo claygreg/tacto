@@ -80,7 +80,7 @@ export default function LandingPage() {
             Do zero ao diagnóstico completo sem complicações.
           </p>
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 step: "01",

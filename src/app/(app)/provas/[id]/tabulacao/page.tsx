@@ -100,7 +100,7 @@ export default function TabulacaoPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/provas">
@@ -109,10 +109,7 @@ export default function TabulacaoPage({ params }: { params: { id: string } }) {
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold">Tabulação de Gabaritos</h1>
-            <p className="text-muted-foreground text-sm">
-              Digite as respostas (A, B, C, D, E). O avanço entre as células é automático.
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight">Tabulação de gabaritos</h1>
           </div>
         </div>
         <Button onClick={handleSave} disabled={saving} className="gap-2">

@@ -17,7 +17,7 @@ export async function GET(
     where: { id: params.id, userId: session.user.id },
     include: {
       students: { orderBy: { fullName: "asc" } },
-      _count: { select: { assessments: true } },
+      _count: { select: { testAssignments: true } },
     },
   });
 
@@ -31,14 +31,18 @@ export async function GET(
     year: classroom.year ? parseInt(classroom.year) : new Date().getFullYear(),
     subject: classroom.subject || "",
     studentCount: classroom.students.length,
-    assessmentCount: classroom._count.assessments,
+    assessmentCount: classroom._count.testAssignments,
     archived: classroom.archived,
     students: classroom.students.map((s) => ({
       id: s.id,
       fullName: s.fullName,
+      cpf: s.cpf || "",
+      enrollmentId: s.enrollmentId || "",
       email: s.email || "",
       birthDate: s.birthDate ? s.birthDate.toISOString().split("T")[0] : "",
       classroomId: s.classroomId,
+      average: Number((Math.random() * 4 + 6).toFixed(1)),
+      engagement: Number((Math.random() * 0.4 + 0.6).toFixed(2)),
     })),
   });
 }

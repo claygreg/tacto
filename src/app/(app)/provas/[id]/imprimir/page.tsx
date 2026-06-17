@@ -108,7 +108,7 @@ export default function ImprimirProvaPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20">
+    <div className="w-full space-y-6 pb-20">
       {/* Controles de Impressão (Ocultos ao imprimir) */}
       <div className="print:hidden bg-card border border-border p-6 rounded-xl space-y-5 shadow-sm">
         <div className="flex items-center justify-between">
@@ -119,8 +119,7 @@ export default function ImprimirProvaPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold">Configurar Impressão</h1>
-              <p className="text-muted-foreground text-sm">Ajuste o cabeçalho e as versões antes de imprimir</p>
+              <h1 className="text-2xl font-bold tracking-tight">Configurar impressão</h1>
             </div>
           </div>
           <Button onClick={() => window.print()} className="gap-2">

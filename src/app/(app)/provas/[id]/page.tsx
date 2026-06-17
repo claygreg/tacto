@@ -1,210 +1,391 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import * as React from "react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, GripVertical, Plus, Loader2, Trash2, Printer, CheckCircle, ChevronDown, FileText, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Plus, Trash2, Search, Printer, Loader2, FileText } from "lucide-react";
-import type { Question } from "@/types";
+import { Textarea } from "@/components/ui/textarea";
+import { QuestionBankModal } from "@/components/features/QuestionBankModal";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { QuestionForm } from "@/components/features/QuestionForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { BreadcrumbSetter } from "@/components/ui/breadcrumb-setter";
+import { EditableTitle } from "@/components/ui/editable-title";
 
-export default function MontagemProvaPage() {
+export default function ProvaEditorPage() {
+  const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const testId = params.id as string;
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
 
-  const [assessment, setAssessment] = useState<any>(null);
-  const [bankQuestions, setBankQuestions] = useState<Question[]>([]);
-  
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [test, setTest] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
+  const [isBankModalOpen, setIsBankModalOpen] = React.useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [isApplyModalOpen, setIsApplyModalOpen] = React.useState(false);
+  const [classrooms, setClassrooms] = React.useState<any[]>([]);
+  const [loadingClassrooms, setLoadingClassrooms] = React.useState(false);
 
-  const fetchData = useCallback(async () => {
+  // Local state for edits
+  const [title, setTitle] = React.useState("");
+  const [instructions, setInstructions] = React.useState("");
+
+  // Track original values to detect changes
+  const [originalTitle, setOriginalTitle] = React.useState("");
+  const [originalInstructions, setOriginalInstructions] = React.useState("");
+  const [pendingAddedQuestionIds, setPendingAddedQuestionIds] = React.useState<string[]>([]);
+  const [pendingRemovedQuestionIds, setPendingRemovedQuestionIds] = React.useState<string[]>([]);
+
+  const hasChanges =
+    title !== originalTitle ||
+    instructions !== originalInstructions ||
+    pendingAddedQuestionIds.length > 0 ||
+    pendingRemovedQuestionIds.length > 0;
+
+  React.useEffect(() => {
+    fetchTest();
+  }, [testId]);
+
+  const fetchTest = async () => {
     try {
-      const [resAssessment, resQuestions] = await Promise.all([
-        fetch(`/api/assessments/${id}`),
-        fetch(`/api/questions`), // Busca banco pessoal inteiro
-      ]);
-
-      if (resAssessment.ok && resQuestions.ok) {
-        setAssessment(await resAssessment.json());
-        setBankQuestions(await resQuestions.json());
+      const res = await fetch(`/api/tests/${testId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTest(data);
+        setTitle(data.title);
+        setInstructions(data.instructions || "");
+        setOriginalTitle(data.title);
+        setOriginalInstructions(data.instructions || "");
+        setPendingAddedQuestionIds([]);
+        setPendingRemovedQuestionIds([]);
+      } else {
+        router.push("/provas");
       }
     } catch (err) {
-      console.error("Erro ao carregar dados", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  };
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleAddQuestion = async (questionId: string) => {
+  const handleSaveAll = async () => {
+    setSaving(true);
     try {
-      const res = await fetch(`/api/assessments/${id}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId }),
-      });
-      if (res.ok) {
-        fetchData(); // recarrega para atualizar a prova
+      // 1. Save title & instructions
+      if (title !== originalTitle || instructions !== originalInstructions) {
+        await fetch(`/api/tests/${testId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, instructions })
+        });
       }
+
+      // 2. Add pending questions
+      if (pendingAddedQuestionIds.length > 0) {
+        await fetch(`/api/tests/${testId}/questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ questionIds: pendingAddedQuestionIds })
+        });
+      }
+
+      // 3. Remove pending questions
+      for (const tqId of pendingRemovedQuestionIds) {
+        await fetch(`/api/tests/${testId}/questions/${tqId}`, {
+          method: "DELETE"
+        });
+      }
+
+      // Re-fetch to sync state
+      await fetchTest();
     } catch (err) {
-      console.error("Erro ao adicionar", err);
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleRemoveQuestion = async (itemId: string) => {
+  const handleAddQuestions = async (questionIds: string[]) => {
+    // Add to pending list (optimistic local update)
+    setPendingAddedQuestionIds(prev => [...prev, ...questionIds]);
+    // Also fetch the question data to display them immediately
     try {
-      const res = await fetch(`/api/assessments/${id}/items?itemId=${itemId}`, {
-        method: "DELETE",
+      await fetch(`/api/tests/${testId}/questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionIds })
       });
+      await fetchTest();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateQuestionSuccess = async (questionId: string) => {
+    setIsCreateModalOpen(false);
+    await handleAddQuestions([questionId]);
+  };
+
+  const removeQuestion = async (testQuestionId: string) => {
+    if (!confirm("Remover esta questão da prova?")) return;
+    // Mark as pending removal (optimistic local update)
+    setPendingRemovedQuestionIds(prev => [...prev, testQuestionId]);
+    try {
+      await fetch(`/api/tests/${testId}/questions/${testQuestionId}`, {
+        method: "DELETE"
+      });
+      fetchTest();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleOpenApplyModal = async () => {
+    setIsApplyModalOpen(true);
+    setLoadingClassrooms(true);
+    try {
+      const res = await fetch("/api/classrooms");
       if (res.ok) {
-        fetchData();
+        const data = await res.json();
+        setClassrooms(data);
       }
     } catch (err) {
-      console.error("Erro ao remover", err);
+      console.error(err);
+    } finally {
+      setLoadingClassrooms(false);
+    }
+  };
+
+  const applyToClassroom = async (classroomId: string) => {
+    try {
+      const res = await fetch(`/api/tests/${testId}/assignments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ classroomId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsApplyModalOpen(false);
+        router.push(`/provas/${testId}/aplicacao/${data.id}`);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  if (!assessment) {
-    return <div className="text-center py-10">Prova não encontrada.</div>;
-  }
-
-  // Filtra as questões do banco (remove as que já estão na prova e aplica busca)
-  const itemsInAssessment = new Set(assessment.items.map((i: any) => i.question.id));
-  const availableQuestions = bankQuestions.filter((q) => {
-    if (itemsInAssessment.has(q.id)) return false;
-    if (search && !q.body.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const existingIds = test?.questions?.map((tq: any) => tq.questionId) || [];
+  const visibleQuestions = test?.questions?.filter(
+    (tq: any) => !pendingRemovedQuestionIds.includes(tq.id)
+  ) || [];
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
+    <div className="flex-1 flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden">
+      {test?.title && <BreadcrumbSetter segment={testId} label={test.title} />}
+      {/* Header — padronizado com o resto da aplicação */}
+      <div className="flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <Link href="/provas">
-            <Button variant="ghost" size="icon" className="w-8 h-8">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Montar Avaliação</h1>
-            <p className="text-muted-foreground text-sm">
-              {assessment.name} • {assessment.classroomName}
-            </p>
-          </div>
+          <Button variant="ghost" size="icon" onClick={() => router.push("/provas")} className="-ml-2">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <EditableTitle
+            value={title}
+            onValueChange={setTitle}
+            placeholder="Título da prova"
+            textClassName="text-xl font-semibold tracking-tight text-foreground"
+            className="-ml-2"
+          />
         </div>
-        
-        <div className="flex gap-2">
-          <Link href={`/provas/${id}/imprimir`}>
-            <Button className="gap-2">
-              <Printer className="w-4 h-4" />
-              Imprimir / Exportar
+        <div className="flex items-center gap-2">
+          {/* Adicionar questão — dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="w-4 h-4" /> Adicionar questão <ChevronDown className="w-3.5 h-3.5 ml-0.5 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={6}>
+              <DropdownMenuItem onClick={() => setIsCreateModalOpen(true)}>
+                <FileText className="w-4 h-4 mr-2" /> Criar nova
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsBankModalOpen(true)}>
+                <Search className="w-4 h-4 mr-2" /> Buscar no acervo
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Exportar */}
+          <Link href={`/imprimir/${testId}`} target="_blank">
+            <Button variant="outline" className="gap-2">
+              <Printer className="w-4 h-4" /> Exportar
             </Button>
           </Link>
+
+          {/* Avaliar turma */}
+          <Button variant="outline" className="gap-2" onClick={handleOpenApplyModal}>
+            <CheckCircle className="w-4 h-4" /> Avaliar turma
+          </Button>
         </div>
       </div>
 
-      <div className="flex gap-6 flex-1 min-h-0">
-        {/* Lado esquerdo: Caderno de Prova */}
-        <div className="w-1/2 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-border bg-muted/20 shrink-0 flex items-center justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <FileText className="w-4 h-4 text-primary" />
-              Caderno de Prova
-            </h2>
-            <Badge variant="outline">{assessment.items.length} questões</Badge>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {assessment.items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-                <FileText className="w-12 h-12 mb-3 opacity-20" />
-                <p>O caderno está vazio.</p>
-                <p className="text-sm mt-1">Adicione questões do banco ao lado.</p>
-              </div>
-            ) : (
-              assessment.items.map((item: any, index: number) => (
-                <div key={item.id} className="p-4 rounded-lg border border-border bg-background relative group">
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded">
-                      Questão {index + 1}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-7 h-7 text-destructive opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
-                      onClick={() => handleRemoveQuestion(item.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                  <p className="text-sm line-clamp-3 leading-relaxed mt-2">{item.question.body}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+      {/* Editor Body — sem padding lateral extra */}
+      <div className="flex-1 overflow-y-auto px-6 pb-24 py-6">
+        <div className="w-full space-y-6">
 
-        {/* Lado direito: Banco de Questões */}
-        <div className="w-1/2 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-border bg-muted/20 shrink-0 space-y-3">
-            <h2 className="font-semibold">Seu Banco de Questões</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar no banco..."
-                className="w-full pl-9 pr-4 py-1.5 text-sm rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
+          {/* Instruções */}
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <label className="block text-sm font-semibold text-foreground mb-2">Instruções da prova (opcional)</label>
+            <Textarea
+              placeholder="Digite as instruções gerais para os alunos... (Ex: Permitido uso de calculadora)"
+              className="resize-none min-h-[100px] border-border bg-card"
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+            />
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {availableQuestions.length === 0 ? (
-              <div className="text-center p-6 text-muted-foreground text-sm">
-                Nenhuma questão disponível para adicionar.
-              </div>
-            ) : (
-              availableQuestions.map((q) => (
-                <div key={q.id} className="p-4 rounded-lg border border-border bg-background hover:border-primary/40 transition-colors flex items-start gap-3 group">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex gap-2 mb-2">
-                      <Badge variant="outline" className="text-[10px] h-5">{q.discipline}</Badge>
-                      <Badge variant="outline" className="text-[10px] h-5">
-                        {q.type === "multiple_choice" ? "Obj" : "Disc"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm line-clamp-2 leading-relaxed">{q.body}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="shrink-0 gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleAddQuestion(q.id)}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add
+
+          {/* Questions List */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground flex items-center justify-between">
+              Questões adicionadas
+              <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                {visibleQuestions.length}
+              </span>
+            </h3>
+
+            {visibleQuestions.length === 0 ? (
+              <div className="text-center py-16 bg-card border border-dashed border-border rounded-xl">
+                <p className="text-muted-foreground mb-4">Sua prova ainda não tem questões.</p>
+                <div className="flex justify-center gap-3">
+                  <Button variant="outline" onClick={() => setIsCreateModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" /> Nova questão
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsBankModalOpen(true)}>
+                    <Search className="w-4 h-4 mr-2" /> Buscar no acervo
                   </Button>
                 </div>
-              ))
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {visibleQuestions.map((tq: any, index: number) => (
+                  <div key={tq.id} className="group bg-card border border-border rounded-xl p-4 shadow-sm flex gap-4 transition-all hover:border-primary/40">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <GripVertical className="w-5 h-5 cursor-grab active:cursor-grabbing hover:text-foreground" />
+                      <span className="text-xs font-medium">{index + 1}</span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: tq.question.body }} />
+
+                      <div className="mt-4 space-y-2 pl-4 border-l-2 border-border/50">
+                        {tq.question.options?.map((opt: any) => (
+                          <div key={opt.id} className="flex gap-2 text-sm text-muted-foreground">
+                            <span className={`font-medium ${opt.isCorrect ? 'text-green-600 dark:text-green-500' : 'text-foreground'}`}>{opt.label})</span>
+                            <span dangerouslySetInnerHTML={{ __html: opt.text }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end justify-start gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => removeQuestion(tq.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                      <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md mt-auto">
+                        Peso: {tq.weight}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+
         </div>
       </div>
+
+      {/* Popover flutuante de salvamento */}
+      {hasChanges && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in-0 duration-300">
+          <div className="flex items-center gap-4 bg-card border border-border rounded-xl px-5 py-3 shadow-lg">
+            <p className="text-sm text-muted-foreground">Você fez alterações nesta avaliação</p>
+            <Button className="gap-2 shrink-0" onClick={handleSaveAll} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Salvar mudanças
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      <QuestionBankModal
+        open={isBankModalOpen}
+        onOpenChange={setIsBankModalOpen}
+        onAddQuestions={handleAddQuestions}
+        existingQuestionIds={existingIds}
+      />
+
+      <Sheet open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <SheetContent side="right" className="w-[90vw] sm:max-w-2xl overflow-y-auto p-6 sm:p-8">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold">Criar questão</h2>
+            <p className="text-sm text-muted-foreground">
+              A questão será salva no banco e adicionada automaticamente no final desta prova.
+            </p>
+          </div>
+          <QuestionForm
+            isInline={true}
+            onSuccess={handleCreateQuestionSuccess}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <Dialog open={isApplyModalOpen} onOpenChange={setIsApplyModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Avaliar turma</DialogTitle>
+            <DialogDescription>
+              Selecione a turma para a qual deseja registrar a aplicação desta prova.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {loadingClassrooms ? (
+              <div className="flex justify-center p-4">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : classrooms.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground">Nenhuma turma cadastrada. Crie uma turma primeiro.</p>
+            ) : (
+              <div className="grid gap-2 max-h-[300px] overflow-y-auto">
+                {classrooms.map((c: any) => (
+                  <Button
+                    key={c.id}
+                    variant="outline"
+                    className="justify-start h-auto py-3 px-4"
+                    onClick={() => applyToClassroom(c.id)}
+                  >
+                    <div className="text-left">
+                      <div className="font-semibold text-foreground">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">{c.subject || 'Sem disciplina'} {c.year ? `- ${c.year}` : ''}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

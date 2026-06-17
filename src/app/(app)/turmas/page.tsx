@@ -1,37 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, FileText, Archive, X } from "lucide-react";
 import type { Classroom } from "@/types";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 export default function TurmasPage() {
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: classrooms = [], isLoading: loading, mutate } = useSWR<Classroom[]>("/api/classrooms", fetcher);
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSubject, setNewSubject] = useState("");
   const [newYear, setNewYear] = useState(new Date().getFullYear().toString());
   const [saving, setSaving] = useState(false);
-
-  const fetchClassrooms = useCallback(async () => {
-    try {
-      const res = await fetch("/api/classrooms");
-      if (res.ok) {
-        const data = await res.json();
-        setClassrooms(data);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar turmas:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchClassrooms();
-  }, [fetchClassrooms]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +30,7 @@ export default function TurmasPage() {
         setNewName("");
         setNewSubject("");
         setNewYear(new Date().getFullYear().toString());
-        fetchClassrooms();
+        mutate();
       }
     } catch (err) {
       console.error("Erro ao criar turma:", err);
@@ -61,21 +44,18 @@ export default function TurmasPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto flex items-center justify-center py-20">
+      <div className="w-full flex items-center justify-center py-20">
         <div className="text-muted-foreground text-sm">Carregando turmas...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Turmas</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {active.length} turma{active.length !== 1 ? "s" : ""} ativa{active.length !== 1 ? "s" : ""}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Turmas</h1>
         </div>
         <Button className="gap-2" id="btn-new-classroom" onClick={() => setShowModal(true)}>
           <Plus className="w-4 h-4" />
@@ -84,7 +64,7 @@ export default function TurmasPage() {
       </div>
 
       {/* Grid de turmas ativas */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {active.map((c) => (
           <Link key={c.id} href={`/turmas/${c.id}`}>
             <div className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-colors group cursor-pointer h-full">
@@ -111,13 +91,14 @@ export default function TurmasPage() {
         ))}
 
         {/* Card "Nova Turma" */}
-        <button
+        <Button
+          variant="outline"
           onClick={() => setShowModal(true)}
-          className="bg-card/50 border border-dashed border-border rounded-xl p-5 hover:border-primary/60 hover:bg-card transition-colors text-muted-foreground hover:text-foreground flex flex-col items-center justify-center gap-2 min-h-[140px]"
+          className="border-dashed h-auto flex flex-col items-center justify-center gap-2 min-h-[140px] text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card"
         >
           <Plus className="w-6 h-6" />
           <span className="text-sm font-medium">Nova Turma</span>
-        </button>
+        </Button>
       </div>
 
       {/* Arquivadas */}
@@ -129,7 +110,7 @@ export default function TurmasPage() {
               Arquivadas ({archived.length})
             </h2>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {archived.map((c) => (
               <div key={c.id} className="bg-card/50 border border-dashed border-border rounded-xl p-4 opacity-60">
                 <h3 className="font-medium text-sm">{c.name}</h3>
@@ -147,9 +128,9 @@ export default function TurmasPage() {
           <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Nova Turma</h2>
-              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>

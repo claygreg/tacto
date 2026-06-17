@@ -11,14 +11,14 @@ export async function GET(req: Request) {
 
   const userId = session.user.id;
 
-  const [classrooms, assessments, questions] = await Promise.all([
+  const [classrooms, tests, questions] = await Promise.all([
     prisma.classroom.findMany({ where: { userId } }),
-    prisma.assessment.findMany({
+    prisma.test.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: {
-        classroom: true,
-        _count: { select: { items: true } }
+        _count: { select: { questions: true } },
+        assignments: true,
       }
     }),
     prisma.question.count({ where: { userId } }),
@@ -27,15 +27,15 @@ export async function GET(req: Request) {
   const activeClassrooms = classrooms.filter(c => !c.archived).length;
   const archivedClassrooms = classrooms.filter(c => c.archived).length;
 
-  const appliedAssessments = assessments.filter(a => a.appliedAt).length;
-  const pendingAssessments = assessments.filter(a => !a.appliedAt).length;
+  const appliedAssessments = tests.filter(t => t.assignments.some(a => a.appliedAt)).length;
+  const pendingAssessments = tests.length - appliedAssessments;
 
-  const recentAssessments = assessments.slice(0, 3).map(a => ({
-    id: a.id,
-    name: a.name,
-    classroomName: a.classroom.name,
-    questionCount: a._count.items,
-    status: a.appliedAt ? "applied" : (a._count.items > 0 ? "exported" : "draft")
+  const recentAssessments = tests.slice(0, 3).map(t => ({
+    id: t.id,
+    name: t.title,
+    classroomName: t.assignments.length > 0 ? "Aplicada em " + t.assignments.length + " turmas" : "Não aplicada",
+    questionCount: t._count.questions,
+    status: t.assignments.some(a => a.appliedAt) ? "applied" : (t._count.questions > 0 ? "exported" : "draft")
   }));
 
   // Simular atividade recente básica
@@ -46,10 +46,10 @@ export async function GET(req: Request) {
   return NextResponse.json({
     classroomCount: activeClassrooms,
     archivedClassrooms,
-    assessmentCount: assessments.length,
+    assessmentCount: tests.length,
     pendingAssessments,
     questionCount: questions,
-    aiGeneratedQuestions: 0, // Poderia ser um count onde source = 'ai_generated'
+    aiGeneratedQuestions: 0,
     recentAssessments,
     mockActivity
   });

@@ -30,7 +30,7 @@ export default function DiagnosticoAlunoPage() {
   const pct = Math.round((student.correctCount / student.totalCount) * 100);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -40,10 +40,7 @@ export default function DiagnosticoAlunoPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold">{student.studentName}</h1>
-            <p className="text-muted-foreground text-sm">
-              Avaliação Bimestral — 2º Bimestre · 9º Ano A
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight">{student.studentName}</h1>
           </div>
         </div>
         {/* Nav entre alunos */}

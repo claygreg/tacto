@@ -67,8 +67,14 @@ export async function POST(req: Request) {
 
   const data = await req.json();
 
-  if (!data.type || !data.body || !data.difficulty) {
-    return NextResponse.json({ message: "Campos obrigatórios faltando" }, { status: 400 });
+  if (!data.type || !data.body || !data.difficulty || !data.folderId) {
+    return NextResponse.json({ message: "Campos obrigatórios faltando (incluindo folderId)" }, { status: 400 });
+  }
+
+  // Verifica se a pasta existe e pertence ao usuário
+  const folder = await prisma.questionFolder.findUnique({ where: { id: data.folderId } });
+  if (!folder || folder.userId !== session.user.id) {
+    return NextResponse.json({ message: "Pasta inválida ou não encontrada" }, { status: 400 });
   }
 
   const question = await prisma.question.create({
@@ -92,6 +98,11 @@ export async function POST(req: Request) {
             }))
           }
         : undefined,
+      folderItems: {
+        create: {
+          folderId: data.folderId
+        }
+      }
     },
     include: {
       options: true,
@@ -100,3 +111,4 @@ export async function POST(req: Request) {
 
   return NextResponse.json(question, { status: 201 });
 }
+

@@ -14,7 +14,7 @@ export async function GET() {
     where: { userId: session.user.id },
     include: {
       _count: {
-        select: { students: true, assessments: true },
+        select: { students: true, testAssignments: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -26,7 +26,7 @@ export async function GET() {
     year: c.year ? parseInt(c.year) : new Date().getFullYear(),
     subject: c.subject || "",
     studentCount: c._count.students,
-    assessmentCount: c._count.assessments,
+    assessmentCount: c._count.testAssignments,
     archived: c.archived,
   }));
 

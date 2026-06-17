@@ -1,0 +1,34 @@
+[
+  {
+    "year": 2023,
+    "discipline": "Ciências da Natureza e suas Tecnologias",
+    "topic": "Biologia",
+    "question": "O consumo de peixes contaminados com mercúrio representa um risco à saúde humana. Esse metal pesado...",
+    "baseText": "O mercúrio é um metal líquido em temperatura ambiente, utilizado em diversas atividades industriais...",
+    "imageUrl": "https://s3.sa-east-1.amazonaws.com/mesalva.com/enem/123_bio.png",
+    "options": [
+      { "label": "A", "text": "acumula-se ao longo da cadeia alimentar.", "isCorrect": true },
+      { "label": "B", "text": "é excretado facilmente pelo organismo humano.", "isCorrect": false },
+      { "label": "C", "text": "converte-se em nutrientes essenciais nos rios.", "isCorrect": false },
+      { "label": "D", "text": "evapora antes de ser absorvido pelos peixes.", "isCorrect": false },
+      { "label": "E", "text": "afeta apenas organismos invertebrados aquáticos.", "isCorrect": false }
+    ],
+    "tags": ["ENEM 2023", "Biologia", "Ecologia", "Poluição"]
+  },
+  {
+    "year": 2023,
+    "discipline": "Matemática e suas Tecnologias",
+    "topic": "Matemática",
+    "question": "Um ciclista percorreu 30 km em 2 horas. Qual foi a sua velocidade média?",
+    "baseText": null,
+    "imageUrl": null,
+    "options": [
+      { "label": "A", "text": "10 km/h", "isCorrect": false },
+      { "label": "B", "text": "12 km/h", "isCorrect": false },
+      { "label": "C", "text": "15 km/h", "isCorrect": true },
+      { "label": "D", "text": "20 km/h", "isCorrect": false },
+      { "label": "E", "text": "30 km/h", "isCorrect": false }
+    ],
+    "tags": ["ENEM 2023", "Matemática", "Cinemática"]
+  }
+]

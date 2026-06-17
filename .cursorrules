@@ -1,0 +1,42 @@
+# Frontend Architecture Rules
+
+## Stack
+- Next.js (App Router)
+- React
+- Prisma (`lib/prisma.ts`)
+- Auth (`lib/auth.ts`)
+- shadcn/ui + Tailwind
+
+## Estrutura (`src/`)
+- `app/(app)`: Área logada.
+- `app/(auth)`: Rotas auth.
+- `app/api`: Endpoints API.
+- `app/imprimir`: View impressão.
+- `components/ui`: Primitivos.
+- `components/features`: Componentes negócio.
+- `components/layout`: Shell.
+- `hooks`: Lógica client.
+- `lib`: Utils, DB, Auth.
+- `types`: Tipos.
+
+## Componentes Prontos
+
+### UI (`components/ui`)
+- Avatar, Badge, Breadcrumb, Button, Dialog, DropdownMenu, GoogleIcon, Input, Progress, ScrollArea, Select, Separator, Sheet, Tabs, Textarea, Tooltip.
+→ Reusar sempre. Não recriar primitivos.
+
+### Features (`components/features`)
+- `DigitalAnswerCard`
+- `QuestionBankModal`
+- `QuestionForm`
+
+### Layout (`components/layout`)
+- `Header`
+- `Sidebar`
+
+## Regras (Frontend Specialist)
+- Reuso UI.
+- Tokens Tailwind > Valores absolutos.
+- Kebab-case arquivos UI, PascalCase arquivos features/layout (projeto usa formato misto, seguir padrão existente).
+- Composição sobre herança.
+- Separação lógica (hooks) x visão (components).

@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import type { StudentDiagnosticDetail, DisciplinePerformance, ItemDetail } from "@/types";
+import { getGradeColorClass, getPercentColorClass } from "@/lib/constants";
 
 export default function StudentDiagnosticPage({ params }: { params: { provaId: string; studentId: string } }) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<StudentDiagnosticDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,12 +29,10 @@ export default function StudentDiagnosticPage({ params }: { params: { provaId: s
   }
 
   const gradePercent = data.maxPossibleScore > 0 ? (data.totalScore / data.maxPossibleScore) * 100 : 0;
-  let gradeColor = "text-red-500";
-  if (gradePercent >= 70) gradeColor = "text-green-500";
-  else if (gradePercent >= 50) gradeColor = "text-amber-500";
+  const gradeColor = getGradeColorClass(gradePercent >= 70 ? 7 : gradePercent >= 50 ? 5 : 3);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20">
+    <div className="w-full space-y-6 pb-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Link href={`/diagnostico/${params.provaId}`}>
@@ -41,8 +41,7 @@ export default function StudentDiagnosticPage({ params }: { params: { provaId: s
           </Button>
         </Link>
         <div>
-          <h1 className="text-xl font-bold">Relatório Individual</h1>
-          <p className="text-muted-foreground text-sm">Desempenho detalhado do aluno</p>
+          <h1 className="text-2xl font-bold tracking-tight">Relatório individual</h1>
         </div>
       </div>
 
@@ -62,14 +61,14 @@ export default function StudentDiagnosticPage({ params }: { params: { provaId: s
         <div className="bg-card border border-border rounded-xl p-6 flex-[2]">
           <h3 className="font-semibold text-sm mb-4">Desempenho por Área</h3>
           <div className="space-y-3">
-            {data.performanceByDiscipline.map((disc: any) => {
+            {data.performanceByDiscipline.map((disc: DisciplinePerformance) => {
               const pct = Math.round(disc.hitRate * 100);
               return (
                 <div key={disc.name} className="flex items-center gap-4">
                   <div className="w-24 text-sm font-medium truncate" title={disc.name}>{disc.name}</div>
                   <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
                     <div 
-                      className={`h-full ${pct >= 70 ? 'bg-green-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                      className={`h-full ${getPercentColorClass(pct)}`} 
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -99,7 +98,7 @@ export default function StudentDiagnosticPage({ params }: { params: { provaId: s
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {data.itemsDetails.map((item: any) => (
+            {data.itemsDetails.map((item: ItemDetail) => (
               <tr key={item.order} className="hover:bg-muted/30">
                 <td className="px-4 py-3 text-center font-medium">{item.order}</td>
                 <td className="px-4 py-3">

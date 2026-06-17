@@ -30,8 +30,19 @@ export interface Question {
   yearLevel: string;
   difficulty: QuestionDifficulty;
   source: QuestionSource;
+  imageUrl?: string;
   options: QuestionOption[];
+  createdAt?: string;
 }
+
+export interface QuestionFolder {
+  id: string;
+  name: string;
+  color: string | null;
+  questionCount: number;
+  createdAt: string;
+}
+
 
 export interface Classroom {
   id: string;
@@ -46,22 +57,22 @@ export interface Classroom {
 export interface Student {
   id: string;
   fullName: string;
-  email: string;
-  birthDate: string;
+  cpf?: string;
+  enrollmentId?: string;
+  email?: string;
+  birthDate?: string;
   classroomId: string;
+  average?: number;
+  engagement?: number;
 }
 
-export interface Assessment {
+export interface Test {
   id: string;
-  name: string;
-  classroomId: string;
-  classroomName: string;
+  title: string;
+  instructions: string | null;
   status: AssessmentStatus;
   createdAt: string;
-  appliedAt: string | null;
   questionCount: number;
-  totalPoints: number;
-  versions: number;
 }
 
 export interface QuestionStat {
@@ -79,6 +90,8 @@ export interface SkillStat {
 export interface GradeRange {
   range: string;
   count: number;
+  name?: string;  // range label (used by charts)
+  value?: number; // count (used by charts)
 }
 
 export interface DiagnosticSummary {
@@ -110,4 +123,77 @@ export interface HistoricalPoint {
   average: number;
   highest: number;
   lowest: number;
+}
+
+// ── Dashboard ────────────────────────────────────────────────
+
+export interface ActivityItem {
+  id: string;
+  text: string;
+  time: string;
+}
+
+export interface RecentAssessment {
+  id: string;
+  name: string;
+  classroomName: string;
+  questionCount: number;
+  status: AssessmentStatus;
+}
+
+export interface DashboardSummary {
+  classroomCount: number;
+  archivedClassrooms: number;
+  assessmentCount: number;
+  pendingAssessments: number;
+  questionCount: number;
+  aiGeneratedQuestions: number;
+  recentAssessments: RecentAssessment[];
+  mockActivity: ActivityItem[];
+}
+
+// ── Assessment Detail ────────────────────────────────────────
+
+export interface AssessmentItemDetail {
+  id: string;
+  order: number;
+  weight: number;
+  question: Question;
+}
+
+export interface AssessmentDetail extends Assessment {
+  items: AssessmentItemDetail[];
+}
+
+// ── Diagnostics Chart ────────────────────────────────────────
+
+export interface GradeDistributionEntry {
+  name: string;
+  value: number;
+}
+
+// ── Student Diagnostic Detail ────────────────────────────────
+
+export interface DisciplinePerformance {
+  name: string;
+  correct: number;
+  total: number;
+  hitRate: number;
+}
+
+export interface ItemDetail {
+  order: number;
+  discipline: string;
+  bncc: string | null;
+  correctOption: string;
+  selectedOption: string | null;
+  isCorrect: boolean;
+}
+
+export interface StudentDiagnosticDetail {
+  studentName: string;
+  totalScore: number;
+  maxPossibleScore: number;
+  performanceByDiscipline: DisciplinePerformance[];
+  itemsDetails: ItemDetail[];
 }

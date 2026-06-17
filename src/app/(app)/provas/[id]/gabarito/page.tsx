@@ -30,7 +30,7 @@ export default function TabulacaoPage() {
   }).length;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -40,8 +40,7 @@ export default function TabulacaoPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Tabulação de Gabaritos</h1>
-            <p className="text-muted-foreground text-sm">Avaliação Bimestral — 2º Bimestre · 9º Ano A</p>
+            <h1 className="text-2xl font-bold tracking-tight">Tabulação de gabaritos</h1>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -108,17 +107,15 @@ export default function TabulacaoPage() {
                       <td key={q.id} className="p-4 text-center">
                         <div className="flex gap-1 justify-center">
                           {options.map((opt) => (
-                            <button
+                            <Button
                               key={opt}
+                              variant={selected === opt ? "default" : "ghost"}
+                              size="icon"
                               onClick={() => setResponse(student.id, q.id, opt)}
-                              className={`w-6 h-6 rounded text-xs font-mono font-bold transition-colors ${
-                                selected === opt
-                                  ? "bg-primary text-primary-foreground"
-                                  : "border border-border text-muted-foreground hover:border-primary/50 hover:text-primary"
-                              }`}
+                              className="w-6 h-6 rounded text-xs font-mono font-bold transition-colors border"
                             >
                               {opt}
-                            </button>
+                            </Button>
                           ))}
                         </div>
                       </td>
